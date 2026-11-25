@@ -68,6 +68,9 @@ function App() {
           <p>{summary}</p>
         </div>
       )}
+      {errorMessage && !loading && (
+        <p className="error-message">{errorMessage}</p>
+      )}
     </div>
   );
 }
