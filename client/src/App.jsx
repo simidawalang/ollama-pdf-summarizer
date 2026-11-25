@@ -5,10 +5,17 @@ function App() {
   const [pdf, setPdf] = useState(null);
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const resetSummary = () => {
-    if(summary) {
+    if (summary) {
       setSummary("");
+    }
+  }
+
+  const resetErrorMessage = () => {
+    if (errorMessage) {
+      setErrorMessage("");
     }
   }
 
@@ -19,40 +26,48 @@ function App() {
     }
 
     resetSummary();
+    resetErrorMessage();
   };
 
-  const fetchpiResponse = async (e) => {
+  const fetchApiResponse = async (e) => {
     e.preventDefault();
 
     resetSummary();
 
-    const formData = new FormData();
-    formData.append("pdf", pdf);
-    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("pdf", pdf);
+      setLoading(true);
 
-    const res = await fetch("http://localhost:5001/api", {
-      method: "POST",
-      body: formData,
-    });
+      const res = await fetch("http://localhost:5001/api", {
+        method: "POST",
+        body: formData,
+      });
 
-    const data = await res.json();
-    setLoading(false);
+      const data = await res.json();
+      setSummary(data.message);
+    } catch (e) {
+      setErrorMessage("An error occured");
+    } finally {
+      setLoading(false);
+    }
 
-    setSummary(data.message);
   };
 
   return (
     <div className="App">
-      <div>
+      <h1 className="title">PDF Summarizer</h1>
+      <div className="select-pdf">
         <input type="file" accept="application/pdf" disabled={loading} onChange={handleFileUpload} />
-        <button onClick={fetchpiResponse} disabled={loading}>Generate AI summary</button>
-        {!summary && loading && <h3>Loading...</h3>}
+        <button onClick={fetchApiResponse} disabled={loading}>Generate AI summary</button>
       </div>
+      {!summary && loading && <h3>Loading...</h3>}
       {summary && !loading && (
         <div className="summary">
           <h3>Summary</h3>
           <p>{summary}</p>
-        </div>)}
+        </div>
+      )}
     </div>
   );
 }
